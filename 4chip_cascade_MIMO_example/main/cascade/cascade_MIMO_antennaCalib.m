@@ -49,7 +49,7 @@ dataPlatform = 'TDA2'
 
 
 % dataFolder_calib_data = '.\main\cascade\testVector\test1\';
-dataFolder_calib_data = 'C:\ti\mmwave_studio_02_01_00_00\mmWaveStudio\PostProc\MIMO_Calibration_Capture\';
+dataFolder_calib_data = 'E:\Documents\Jetbrains\Pycharm\mmWaveTest\data\MIMO_Calibration_Capture\';
 targetRange = 5; %target aproximate distance for local maximum search
 
 %parameter file name for the test
@@ -66,7 +66,7 @@ genCalibrationMatrixObj      = genCalibrationMatrixCascade('pfile', pathGenParaF
     'calibrateFileName',dataFolder_calib_data, 'targetRange', targetRange);
 
 [fileIdx_unique] = getUniqueFileIdx(dataFolder_calib_data);
-[fileNameStruct]= getBinFileNames_withIdx(dataFolder_calib_data, fileIdx_unique{1})        
+[fileNameStruct] = getBinFileNames_withIdx(dataFolder_calib_data, fileIdx_unique{1});        
 genCalibrationMatrixObj.binDataFile = fileNameStruct;% dataFolder_calib_data;%[dataFolder_calib_data listing.name];
 
 if length(genCalibrationMatrixObj.TxToEnable)< 12

@@ -68,9 +68,11 @@ f=dir(fullfile(dataFolder_calib,'*.mmwave.json'));
 if length(f)~=1
     error('Unknown parameter file or too many chirpProfiles_*.jason file!!');
 else
-    
+    disp(['dataFolder_calib = ' dataFolder_calib]);
+    disp(['f.name = ' f.name]);
     disp(['paramFile= ' dataFolder_calib f.name]);
     paramFile = [dataFolder_calib f.name];
+    % paramFile = [fullfile(dataFolder_calib,f.name)];
     
     %go to the test data folder to run the .json file and read the chirp parameters
     %associated with the data
