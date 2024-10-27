@@ -81,7 +81,9 @@ fileName=[fileFolder];
 switch obj.dataPlatform
 
     case 'TDA2'
-        numChirpPerLoop = obj.numChirpsPerFrame/obj.nchirp_loops; 
+        numChirpPerLoop = obj.numChirpsPerFrame/obj.nchirp_loops; % nchirp_loops = 64, meaning number of chirp send in a frame by each antenna (Tx).
+        % numChirpPerLoop is actually the number of chirp across antenna, or the number of antenna. Each antenna will send 1 chrip in 1 loop.
+        % So numChirpPerLoop becomes the number of antenna.
         numLoops = obj.nchirp_loops;             
         numRXPerDevice = 4; % Fixed number      
         [radar_data_Rxchain] = read_ADC_bin_TDA2_separateFiles(fileName,frameIdx,numSamplePerChirp,numChirpPerLoop,numLoops, numRXPerDevice, 1);

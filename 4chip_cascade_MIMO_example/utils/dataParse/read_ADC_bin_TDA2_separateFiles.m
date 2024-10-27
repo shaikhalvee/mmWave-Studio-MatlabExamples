@@ -41,6 +41,13 @@ function [radar_data_Rxchain] = read_ADC_bin_TDA2_separateFiles(fileNameCascade,
   fileFullPath_slave2 = fullfile(dataFolder,fileNameCascade.slave2);
   fileFullPath_slave3 = fullfile(dataFolder,fileNameCascade.slave3);
 
+  fprintf('frameIdx: %f, sample per chirp: %d, chirp per loop: %d, num loop: %d, num rx per device: %d, num device: %d\n', frameIdx, numSamplePerChirp, numChirpPerLoop, numLoops, numRXPerDevice, numDevices)
+  %numSamplePerChirp = 256
+  %numChirpPerLoop = 12
+  %numLoops = 64
+  %numRXPerDevice = 4
+  %numDevices = 4
+
  [radar_data_Rxchain_master] = readBinFile(fileFullPath_master, frameIdx,numSamplePerChirp,numChirpPerLoop,numLoops, numRXPerDevice, numDevices);
  [radar_data_Rxchain_slave1] = readBinFile(fileFullPath_slave1, frameIdx,numSamplePerChirp,numChirpPerLoop,numLoops, numRXPerDevice, numDevices);
  [radar_data_Rxchain_slave2] = readBinFile(fileFullPath_slave2, frameIdx,numSamplePerChirp,numChirpPerLoop,numLoops, numRXPerDevice, numDevices);
@@ -58,15 +65,15 @@ end
 
 
 function [adcData1Complex] = readBinFile(fileFullPath, frameIdx,numSamplePerChirp,numChirpPerLoop,numLoops, numRXPerDevice, numDevices)
-Expected_Num_SamplesPerFrame = numSamplePerChirp*numChirpPerLoop*numLoops*numRXPerDevice*2;
-fp = fopen(fileFullPath, 'r');
-fseek(fp,(frameIdx-1)*Expected_Num_SamplesPerFrame*2, 'bof');
-adcData1 = fread(fp,Expected_Num_SamplesPerFrame,'uint16');
-neg             = logical(bitget(adcData1, 16));
-adcData1(neg)    = adcData1(neg) - 2^16;
-%% 
-adcData1 = adcData1(1:2:end) + sqrt(-1)*adcData1(2:2:end);
-adcData1Complex = reshape(adcData1, numRXPerDevice, numSamplePerChirp, numChirpPerLoop, numLoops);
-adcData1Complex = permute(adcData1Complex, [2 4 1 3]);
-fclose(fp);
+    Expected_Num_SamplesPerFrame = numSamplePerChirp*numChirpPerLoop*numLoops*numRXPerDevice*2;
+    fp = fopen(fileFullPath, 'r');
+    fseek(fp,(frameIdx-1)*Expected_Num_SamplesPerFrame*2, 'bof');
+    adcData1 = fread(fp,Expected_Num_SamplesPerFrame,'uint16');
+    neg             = logical(bitget(adcData1, 16));
+    adcData1(neg)    = adcData1(neg) - 2^16;
+    %%
+    adcData1 = adcData1(1:2:end) + sqrt(-1)*adcData1(2:2:end);
+    adcData1Complex = reshape(adcData1, numRXPerDevice, numSamplePerChirp, numChirpPerLoop, numLoops);
+    adcData1Complex = permute(adcData1Complex, [2 4 1 3]);
+    fclose(fp);
 end

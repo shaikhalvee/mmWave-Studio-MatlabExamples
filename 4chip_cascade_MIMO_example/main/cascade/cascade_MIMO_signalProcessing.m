@@ -44,10 +44,10 @@ close all
 PLOT_ON = 1; % 1: turn plot on; 0: turn plot off
 LOG_ON = 1; % 1: log10 scale; 0: linear scale
 % numFrames_toRun = 10; %number of frame to run, can be less than the frame saved in the raw data
-SAVEOUTPUT_ON = 0;
+SAVEOUTPUT_ON = 1;
 PARAM_FILE_GEN_ON = 1;
 DISPLAY_RANGE_AZIMUTH_DYNAMIC_HEATMAP = 0 ; % Will make things slower
-dataPlatform = 'TDA2'
+dataPlatform = 'TDA2';
 
 %% get the input path and testList
 pro_path = getenv('CASCADE_SIGNAL_PROCESSING_CHAIN_MIMO');
