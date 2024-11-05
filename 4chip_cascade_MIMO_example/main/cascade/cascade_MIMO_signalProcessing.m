@@ -41,7 +41,7 @@
 clearvars
 close all
 
-PLOT_ON = 1; % 1: turn plot on; 0: turn plot off
+PLOT_ON = 0; % 1: turn plot on; 0: turn plot off
 LOG_ON = 1; % 1: log10 scale; 0: linear scale
 % numFrames_toRun = 10; %number of frame to run, can be less than the frame saved in the raw data
 SAVEOUTPUT_ON = 1;
@@ -55,7 +55,7 @@ input_path = strcat(pro_path,'\main\cascade\input\');
 testList = strcat(input_path,'testList.txt');
 %path for input folder
 fidList = fopen(testList,'r');
-testID = 1;
+testID = 3;
 
 while ~feof(fidList)
     
@@ -98,6 +98,7 @@ while ~feof(fidList)
     cnt = 1;
     frameCountGlobal = 0;
     
+    calibrationObj.adcCalibrationOn = 0;
     
    % Get Unique File Idxs in the "dataFolder_test"   
    [fileIdx_unique] = getUniqueFileIdx(dataFolder_test);
@@ -124,7 +125,10 @@ while ~feof(fidList)
             adcData = datapath(calibrationObj);
             
             % RX Channel re-ordering
-            adcData = adcData(:,:,calibrationObj.RxForMIMOProcess,:);            
+            adcData = adcData(:,:,calibrationObj.RxForMIMOProcess,:);  
+
+            % sizeVal = size(adcData); % [256,64,16,12]
+            % sizeVal1 = size(adcData, 4); % 12
             
             %only take TX and RXs required for MIMO data analysis
             % adcData = adcData
@@ -147,14 +151,17 @@ while ~feof(fidList)
                 
             end
             
+            sizeVal = size(DopplerFFTOut); % [256, 64, 16, 12]
   
             % CFAR done along only TX and RX used in MIMO array
             DopplerFFTOut = reshape(DopplerFFTOut,size(DopplerFFTOut,1), size(DopplerFFTOut,2), size(DopplerFFTOut,3)*size(DopplerFFTOut,4));
+
+            sizeVal1 = size(DopplerFFTOut); % [256, 64, 192]
             
             %detection
             sig_integrate = 10*log10(sum((abs(DopplerFFTOut)).^2,3) + 1);
                         
-            detection_results = datapath(detectionObj, DopplerFFTOut);
+            detection_results = datapath(detectionObj, DopplerFFTOut, frameCountGlobal);
             detection_results_all{cnt} =  detection_results;
             
             detect_all_points = [];

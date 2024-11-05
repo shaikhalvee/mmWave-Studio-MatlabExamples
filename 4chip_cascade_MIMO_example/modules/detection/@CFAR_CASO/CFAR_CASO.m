@@ -104,7 +104,7 @@ classdef CFAR_CASO < Module
         end
         % datapath function
         %% input: adc data, assuming size(input) = [numSamplePerChipr numChirpsPerFrame numAntenna]
-        [detection_results N_obj Ind_obj]  = datapath(obj, input)
+        [detection_results N_obj Ind_obj]  = datapath(obj, input, frameCount)
     end
     methods (Access = protected)
         %% input: adc data, assuming size(input) = [numSamplePerChipr numChirpsPerFrame numAntenna]

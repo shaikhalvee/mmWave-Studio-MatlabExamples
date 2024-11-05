@@ -41,7 +41,7 @@ function [radar_data_Rxchain] = read_ADC_bin_TDA2_separateFiles(fileNameCascade,
   fileFullPath_slave2 = fullfile(dataFolder,fileNameCascade.slave2);
   fileFullPath_slave3 = fullfile(dataFolder,fileNameCascade.slave3);
 
-  fprintf('frameIdx: %f, sample per chirp: %d, chirp per loop: %d, num loop: %d, num rx per device: %d, num device: %d\n', frameIdx, numSamplePerChirp, numChirpPerLoop, numLoops, numRXPerDevice, numDevices)
+  % fprintf('frameIdx: %f, sample per chirp: %d, chirp per loop: %d, num loop: %d, num rx per device: %d, num device: %d\n', frameIdx, numSamplePerChirp, numChirpPerLoop, numLoops, numRXPerDevice, numDevices)
   %numSamplePerChirp = 256
   %numChirpPerLoop = 12
   %numLoops = 64
@@ -75,5 +75,7 @@ function [adcData1Complex] = readBinFile(fileFullPath, frameIdx,numSamplePerChir
     adcData1 = adcData1(1:2:end) + sqrt(-1)*adcData1(2:2:end);
     adcData1Complex = reshape(adcData1, numRXPerDevice, numSamplePerChirp, numChirpPerLoop, numLoops);
     adcData1Complex = permute(adcData1Complex, [2 4 1 3]);
+    % sizeVal = size(adcData1Complex);
+    % fprintf("filepath: %s, frameId: %d, dimension: %d\n", fileFullPath, frameIdx, sizeVal);
     fclose(fp);
 end

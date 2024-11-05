@@ -43,7 +43,7 @@
 %   dataPlatform: flag for data capture platform
 
 
-function parameter_file_gen_Jason(test_name, dataFolder_calib,module_param_file, pathGenParaFile, dataPlatform)
+function parameter_file_gen_json(test_name, dataFolder_calib,module_param_file, pathGenParaFile, dataPlatform)
 
 % create param file
 %param_fileName = strcat(test_name,'test_param.m');

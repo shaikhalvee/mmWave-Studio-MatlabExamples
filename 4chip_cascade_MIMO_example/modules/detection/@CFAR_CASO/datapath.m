@@ -52,7 +52,7 @@
 %
 
 
-function [detection_results] = datapath(obj, input)
+function [detection_results] = datapath(obj, input, frameCount)
 
 
 % non-coherent signal combination along the antenna array
@@ -86,6 +86,7 @@ if (obj.detectMethod == 1) % Cell dual-pass CASO-CFAR
         end
         
         for i_obj = 1:N_obj
+            detection_results(i_obj).frameIndex = frameCount;
             xind = (Ind_obj(i_obj,1)-1) +1;
             detection_results(i_obj).rangeInd = Ind_obj(i_obj, 1) - 1;  %range index
             detection_results(i_obj).range = (detection_results(i_obj).rangeInd) * obj.rangeBinSize;  %range estimation

@@ -89,15 +89,15 @@ end
 
 
 function [adcData1Complex] = readBinFile(fileFullPath, Chirp_Frame_BF, frameIdx,numSamplePerChirp,numChirpPerLoop,numLoops, numRXPerDevice, numDevices)
-Expected_Num_SamplesPerFrame = numSamplePerChirp*numChirpPerLoop*numLoops*numRXPerDevice*2;
-fp = fopen(fileFullPath, 'r');
-fseek(fp,(frameIdx-1)*Expected_Num_SamplesPerFrame*2, 'bof');
-adcData1 = fread(fp,Expected_Num_SamplesPerFrame,'uint16');
-neg             = logical(bitget(adcData1, 16));
-adcData1(neg)    = adcData1(neg) - 2^16;
-%%
-adcData1 = adcData1(1:2:end) + sqrt(-1)*adcData1(2:2:end);
-adcData1Complex = reshape(adcData1, numRXPerDevice, numSamplePerChirp, numChirpPerLoop, numLoops);
+    Expected_Num_SamplesPerFrame = numSamplePerChirp*numChirpPerLoop*numLoops*numRXPerDevice*2;
+    fp = fopen(fileFullPath, 'r');
+    fseek(fp,(frameIdx-1)*Expected_Num_SamplesPerFrame*2, 'bof');
+    adcData1 = fread(fp,Expected_Num_SamplesPerFrame,'uint16');
+    neg             = logical(bitget(adcData1, 16));
+    adcData1(neg)    = adcData1(neg) - 2^16;
+    %%
+    adcData1 = adcData1(1:2:end) + sqrt(-1)*adcData1(2:2:end);
+    adcData1Complex = reshape(adcData1, numRXPerDevice, numSamplePerChirp, numChirpPerLoop, numLoops);
 
 
 
