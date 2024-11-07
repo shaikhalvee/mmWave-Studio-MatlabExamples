@@ -327,7 +327,5 @@ while ~feof(fidList)
     if SAVEOUTPUT_ON == 1
         save(['.\main\cascade\output\newOutput_',testName,'.mat'],'angles_all_all', 'detection_results_all','xyz_all', 'sig_integrate_all', 'rangeBinSize', 'dopplerBinSize');
     end
-    testID = testID + 1;
-    sizeOfSig = size(sig_integrate_all{1});
-    
+    testID = testID + 1; 
 end

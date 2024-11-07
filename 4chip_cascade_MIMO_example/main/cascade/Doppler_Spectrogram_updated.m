@@ -1,8 +1,9 @@
 % Doppler_Spectrogram_Updated.m
 
 % Clear workspace and command window
-clear all;
-clc;
+clearvars
+close all
+% clc;
 
 % Initialize switch
 NORMALIZE_SPECTOGRAM = 1;
