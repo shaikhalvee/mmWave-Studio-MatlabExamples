@@ -55,13 +55,13 @@ input_path = strcat(pro_path,'\main\cascade\input\');
 testList = strcat(input_path,'testList.txt');
 %path for input folder
 fidList = fopen(testList,'r');
-testID = 3;
+testID = 1;
 
 while ~feof(fidList)
     
     %% get each test vectors within the test list
     % test data file name
-    dataFolder_test = fgetl(fidList);    
+    dataFolder_test = fgetl(fidList); 
    
     %calibration file name
     dataFolder_calib = fgetl(fidList);
@@ -69,19 +69,23 @@ while ~feof(fidList)
     %module_param_file defines parameters to init each signal processing
     %module
     module_param_file = fgetl(fidList);
-    
-     %parameter file name for the test
-    pathGenParaFile = [input_path,'test',num2str(testID), '_param.m'];
-    %important to clear the same.m file, since Matlab does not clear cache
-    %automatically
+
+    % extracting testname
+    ind = strfind(dataFolder_test, '\');
+    testName = dataFolder_test(ind(end-1)+1:(ind(end)-1));
+
+    % parameter file name for the test
+    pathGenParaFile = [input_path,'test_',num2str(testName), '_param.m'];
+    % important to clear the same.m file, since Matlab does not clear cache
+    % automatically
     clear(pathGenParaFile);
     
-    %generate parameter file for the test to run
+    % generate parameter file for the test to run
     if PARAM_FILE_GEN_ON == 1     
         parameter_file_gen_json(dataFolder_test, dataFolder_calib, module_param_file, pathGenParaFile, dataPlatform);
     end
     
-    %load calibration parameters
+    % load calibration parameters
     load(dataFolder_calib)
     
     % simTopObj is used for top level parameter parsing and data loading and saving
@@ -98,39 +102,39 @@ while ~feof(fidList)
     cnt = 1;
     frameCountGlobal = 0;
     
+    % switching off antenna calibration
     calibrationObj.adcCalibrationOn = 0;
     
    % Get Unique File Idxs in the "dataFolder_test"   
    [fileIdx_unique] = getUniqueFileIdx(dataFolder_test);
     
     for i_file = 1:(length(fileIdx_unique))
-        
-       % Get File Names for the Master, Slave1, Slave2, Slave3   
-       [fileNameStruct]= getBinFileNames_withIdx(dataFolder_test, fileIdx_unique{i_file});        
-       
-      %pass the Data File to the calibration Object
-      calibrationObj.binfilePath = fileNameStruct;
-        
-      detection_results = [];  
-        
-       % Get Valid Number of Frames 
-       [numValidFrames dataFileSize] = getValidNumFrames(fullfile(dataFolder_test, fileNameStruct.masterIdxFile));
-        %intentionally skip the first frame due to TDA2 
-       
-        for frameIdx = 2:1:numValidFrames;%numFrames_toRun
+        % Get File Names for the Master, Slave1, Slave2, Slave3
+        [fileNameStruct] = getBinFileNames_withIdx(dataFolder_test, fileIdx_unique{i_file});
+
+        %pass the Data File to the calibration Object
+        calibrationObj.binfilePath = fileNameStruct;
+
+        detection_results = [];
+
+        % Get Valid Number of Frames
+        [numValidFrames, dataFileSize] = getValidNumFrames(fullfile(dataFolder_test, fileNameStruct.masterIdxFile));
+
+        %intentionally skip the first frame due to TDA2
+        for frameIdx = 2:1:numValidFrames %numFrames_toRun
             tic
-            %read and calibrate raw ADC data            
+            % read and calibrate raw ADC data
             calibrationObj.frameIdx = frameIdx;
-            frameCountGlobal = frameCountGlobal+1
+            frameCountGlobal = frameCountGlobal+1;
             adcData = datapath(calibrationObj);
-            
+
             % RX Channel re-ordering
-            adcData = adcData(:,:,calibrationObj.RxForMIMOProcess,:);  
+            adcData = adcData(:,:,calibrationObj.RxForMIMOProcess,:); % reorder according to (Rx) [13 14 15 16 1 2 3 4 9 10 11 12 5 6 7 8 ] order
 
             % sizeVal = size(adcData); % [256,64,16,12]
             % sizeVal1 = size(adcData, 4); % 12
             
-            %only take TX and RXs required for MIMO data analysis
+            % only take TX and RXs required for MIMO data analysis
             % adcData = adcData
             
             if mod(frameIdx, 10)==1
@@ -138,30 +142,33 @@ while ~feof(fidList)
             end
             
             
-            %perform 2D FFT
+            % perform 2D FFT for each frameIdx
             rangeFFTOut = [];
             DopplerFFTOut = [];
-            
+
+%            range and Doppler FFT for each frame, for each Tx antenna
             for i_tx = 1: size(adcData,4)
                 % range FFT
-                rangeFFTOut(:,:,:,i_tx)     = datapath(rangeFFTObj, adcData(:,:,:,i_tx));
-                
+                rangeFFTOut(:,:,:,i_tx) = datapath(rangeFFTObj, adcData(:,:,:,i_tx));
+
                 % Doppler FFT
-                DopplerFFTOut(:,:,:,i_tx)   = datapath(DopplerFFTObj, rangeFFTOut(:,:,:,i_tx));
+                DopplerFFTOut(:,:,:,i_tx) = datapath(DopplerFFTObj, rangeFFTOut(:,:,:,i_tx));
                 
             end
             
-            sizeVal = size(DopplerFFTOut); % [256, 64, 16, 12]
+%            sizeVal = size(DopplerFFTOut); % [256, 64, 16, 12]
   
             % CFAR done along only TX and RX used in MIMO array
             DopplerFFTOut = reshape(DopplerFFTOut,size(DopplerFFTOut,1), size(DopplerFFTOut,2), size(DopplerFFTOut,3)*size(DopplerFFTOut,4));
 
-            sizeVal1 = size(DopplerFFTOut); % [256, 64, 192]
+%            sizeVal1 = size(DopplerFFTOut); % [256, 64, 192]
             
-            %detection
+            % Calculating integrated signal power
             sig_integrate = 10*log10(sum((abs(DopplerFFTOut)).^2,3) + 1);
                         
             detection_results = datapath(detectionObj, DopplerFFTOut, frameCountGlobal);
+            % saving all detection in 'cnt'th frame. detection_results
+            % contain all the range & vel info for the current frame
             detection_results_all{cnt} =  detection_results;
             
             detect_all_points = [];
@@ -175,7 +182,7 @@ while ~feof(fidList)
                 figure(1);
                 set(gcf,'units','normalized','outerposition',[0 0 1 1])                
                 subplot(2,2,1)               
-                plot((1:size(sig_integrate,1))*detectionObj.rangeBinSize, sig_integrate(:,size(sig_integrate,2)/2+1),'g','LineWidth',4);hold on; grid on
+                plot((1:size(sig_integrate,1))*detectionObj.rangeBinSize, sig_integrate(:,size(sig_integrate,2)/2+1),'g','LineWidth',4); hold on; grid on
                 for ii=1:size(sig_integrate,2)
                     plot((1:size(sig_integrate,1))*detectionObj.rangeBinSize, sig_integrate(:,ii));hold on; grid on
                     if ~isempty(detection_results)
@@ -203,7 +210,8 @@ while ~feof(fidList)
                 title(' Range/Velocity Plot');
                 pause(0.01)
             end
-            
+
+            % calculate angles for each frame
             angles_all_points = [];
             xyz = [];
             %if 0
@@ -230,11 +238,11 @@ while ~feof(fidList)
                         xyz(iobj,6) = angleEst(iobj).estSNR;
                         xyz(iobj,7) = angleEst(iobj).doppler_corr_overlap;
                         xyz(iobj,8) = angleEst(iobj).doppler_corr_FFT;
-                        
                     end
+
                     angles_all_all{cnt} = angles_all_points;
                     xyz_all{cnt}  = xyz;
-                    maxRangeShow = detectionObj.rangeBinSize*rangeFFTObj.rangeFFTSize;
+                    maxRangeShow = detectionObj.rangeBinSize * rangeFFTObj.rangeFFTSize;
                     %tic
                     if PLOT_ON
                         moveID = find(abs(xyz(:,4))>=0);
@@ -267,47 +275,48 @@ while ~feof(fidList)
                         STATIC_ONLY = 1;
                         minRangeBinKeep =  5;
                         rightRangeBinDiscard =  20;
-                        [mag_data_static(:,:,frameCountGlobal) mag_data_dynamic(:,:,frameCountGlobal) y_axis x_axis]= plot_range_azimuth_2D(detectionObj.rangeBinSize, DopplerFFTOut,...
+                        [mag_data_static(:,:,frameCountGlobal) mag_data_dynamic(:,:,frameCountGlobal) y_axis x_axis] = plot_range_azimuth_2D(detectionObj.rangeBinSize, DopplerFFTOut,...
                             length(calibrationObj.IdTxForMIMOProcess),length(calibrationObj.RxForMIMOProcess), ...
                             detectionObj.antenna_azimuthonly, LOG_ON, STATIC_ONLY, PLOT_ON, minRangeBinKeep, rightRangeBinDiscard);
                         title('range/azimuth heat map static objects')
                        
                         
     if (DISPLAY_RANGE_AZIMUTH_DYNAMIC_HEATMAP)                   
-    figure(2)
-    subplot(121);
-    surf(y_axis, x_axis, (mag_data_static(:,:,frameCountGlobal)).^0.4,'EdgeColor','none');
-    view(2);
-    xlabel('meters');    ylabel('meters')
-    title({'Static Range-Azimuth Heatmap',strcat('Current Frame Number = ', num2str(frameCountGlobal))})
+        figure(2)
+        subplot(121);
+        surf(y_axis, x_axis, (mag_data_static(:,:,frameCountGlobal)).^0.4,'EdgeColor','none');
+        view(2);
+        xlabel('meters');    ylabel('meters')
+        title({'Static Range-Azimuth Heatmap',strcat('Current Frame Number = ', num2str(frameCountGlobal))})
     
-    subplot(122);
-    surf(y_axis, x_axis, (mag_data_dynamic(:,:,frameCountGlobal)).^0.4,'EdgeColor','none');
-    view(2);    
-    xlabel('meters');    ylabel('meters')
-    title('Dynamic HeatMap')
+        subplot(122);
+        surf(y_axis, x_axis, (mag_data_dynamic(:,:,frameCountGlobal)).^0.4,'EdgeColor','none');
+        view(2);
+        xlabel('meters');    ylabel('meters')
+        title('Dynamic HeatMap')
     end
     pause(0.1) 
 
      
-                    end
+                    end     % angle plot end
                     
-                end
+                end     %  if length(angleEst) > 0 ends.
                 
-            end
+            end     %  if ~isempty(detection_results) ends.
                              
-            cnt = cnt + 1;    
-       toc    
-        end
+            cnt = cnt + 1;
+            toc
+        end     % for each frame loop ends. Main loop ends.
         
         
-    end
+    end     % for each input fileList ends.
     
     ind = strfind(dataFolder_test, '\');
     testName = dataFolder_test(ind(end-1)+1:(ind(end)-1));
     if SAVEOUTPUT_ON == 1
-        save(['.\main\cascade\output\newOutput_',testName,'.mat'],'angles_all_all', 'detection_results_all','xyz_all');
+        save(['.\main\cascade\output\newOutput_',testName,'.mat'],'angles_all_all', 'detection_results_all','xyz_all', 'sig_integrate_all', 'rangeBinSize', 'dopplerBinSize');
     end
     testID = testID + 1;
+    sizeOfSig = size(sig_integrate_all{1});
     
 end

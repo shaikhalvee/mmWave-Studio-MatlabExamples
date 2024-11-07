@@ -51,7 +51,7 @@
 %                     peaks
 %   Rx_fft: Complex FFT values
 
-function [Rx_fft,Angle_FFT_Peak, Val_FFT_Peak,Fund_range_Index] = radar_fft_find_peak(obj, Rx_Data,range_bin_search_min,range_bin_search_max)
+function [Rx_fft,Angle_FFT_Peak, Val_FFT_Peak,Fund_range_Index] = radar_fft_find_peak(obj, Rx_Data, range_bin_search_min, range_bin_search_max)
 Effective_Num_Samples = length(Rx_Data);
 wind = hann_local(Effective_Num_Samples);
 wind = wind/rms(wind);
@@ -61,7 +61,7 @@ Rx_Data_prefft = Rx_Data.*wind;
 Rx_fft = (fft(Rx_Data_prefft,interp_fact*Effective_Num_Samples));
 
 Rx_fft_searchwindow = abs(Rx_fft(range_bin_search_min:range_bin_search_max));
-[~,Fund_range_Index]= max(Rx_fft_searchwindow(:));
+[~, Fund_range_Index]= max(Rx_fft_searchwindow(:));
 Fund_range_Index = Fund_range_Index+range_bin_search_min-1;
 
 Angle_FFT_Peak = angle(Rx_fft(Fund_range_Index))*180/pi;

@@ -51,7 +51,7 @@
 %   detection_results: detecion results
 %
 
-
+% here input is the DopplerFFTOut. dim: [256, 64, 192]
 function [detection_results] = datapath(obj, input, frameCount)
 
 
