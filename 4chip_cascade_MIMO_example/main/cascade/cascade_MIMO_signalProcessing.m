@@ -104,9 +104,12 @@ while ~feof(fidList)
     
     % switching off antenna calibration
     calibrationObj.adcCalibrationOn = 0;
-    
-   % Get Unique File Idxs in the "dataFolder_test"   
-   [fileIdx_unique] = getUniqueFileIdx(dataFolder_test);
+
+    % Get Unique File Idxs in the "dataFolder_test"
+    [fileIdx_unique] = getUniqueFileIdx(dataFolder_test);
+
+    % Initialize a cell array to store sig_integrate for all frames
+    sig_integrate_all = {};
     
     for i_file = 1:(length(fileIdx_unique))
         % Get File Names for the Master, Slave1, Slave2, Slave3
@@ -165,7 +168,15 @@ while ~feof(fidList)
             
             % Calculating integrated signal power
             sig_integrate = 10*log10(sum((abs(DopplerFFTOut)).^2,3) + 1);
-                        
+
+            % Store sig_integrate for Doppler Spectrogram
+            sig_integrate_all{cnt} = sig_integrate;
+
+            % saving the rangeBinSize and DopplerBinSize
+            rangeBinSize = detectionObj.rangeBinSize;
+            dopplerBinSize = detectionObj.velocityBinSize;
+
+            % calling the CFAR_CASO datapath()
             detection_results = datapath(detectionObj, DopplerFFTOut, frameCountGlobal);
             % saving all detection in 'cnt'th frame. detection_results
             % contain all the range & vel info for the current frame
