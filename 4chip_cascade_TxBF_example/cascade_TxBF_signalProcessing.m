@@ -33,7 +33,8 @@
 % stich the multiple scans together with RX beamforming
 
 %read the adc data and postprocess it
-close all;clc
+close all;
+clc;
 clearvars;
 addpath(genpath('.\PostProc\'))
 addpath(genpath('.\cascade_json_parser\'))

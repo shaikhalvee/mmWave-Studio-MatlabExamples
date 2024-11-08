@@ -149,7 +149,7 @@ while ~feof(fidList)
             rangeFFTOut = [];
             DopplerFFTOut = [];
 
-%            range and Doppler FFT for each frame, for each Tx antenna
+            % range and Doppler FFT for each frame, for each Tx antenna
             for i_tx = 1: size(adcData,4)
                 % range FFT
                 rangeFFTOut(:,:,:,i_tx) = datapath(rangeFFTObj, adcData(:,:,:,i_tx));
@@ -159,12 +159,13 @@ while ~feof(fidList)
                 
             end
             
-%            sizeVal = size(DopplerFFTOut); % [256, 64, 16, 12]
+            % sizeVal = size(DopplerFFTOut); % [256, 64, 16, 12]
   
             % CFAR done along only TX and RX used in MIMO array
             DopplerFFTOut = reshape(DopplerFFTOut,size(DopplerFFTOut,1), size(DopplerFFTOut,2), size(DopplerFFTOut,3)*size(DopplerFFTOut,4));
-
-%            sizeVal1 = size(DopplerFFTOut); % [256, 64, 192]
+            
+            
+            % sizeVal1 = size(DopplerFFTOut); % [256, 64, 192]
             
             % Calculating integrated signal power
             sig_integrate = 10*log10(sum((abs(DopplerFFTOut)).^2,3) + 1);
