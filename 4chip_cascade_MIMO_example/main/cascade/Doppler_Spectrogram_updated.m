@@ -105,6 +105,14 @@ tickLabels = round(dopplerVelocities(tickPositions), 2); % Round to 2 decimal pl
 % Apply X-axis Tick Labels
 set(gca, 'XTick', tickPositions, 'XTickLabel', tickLabels);
 
+% Customize the y-axis if needed
+% Example: Label frames with actual timestamps or frame rates
+% Assuming a frame rate 'frameRate' (frames per second)
+% frameRate = 30; % Example value
+% frameTimes = (1:numFrames) / frameRate;
+% set(gca, 'YTick', 1:10:numFrames, 'YTickLabel', round(frameTimes(1:10:end),2));
+% ylabel('Time (s)');
+
 % Improve visualization aesthetics
 set(gca, 'FontSize', 12);
 testName = regexprep(testName, '_', '\\_');

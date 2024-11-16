@@ -41,7 +41,7 @@
 clearvars
 close all
 
-PLOT_ON = 0; % 1: turn plot on; 0: turn plot off
+PLOT_ON = 1; % 1: turn plot on; 0: turn plot off
 LOG_ON = 1; % 1: log10 scale; 0: linear scale
 % numFrames_toRun = 10; %number of frame to run, can be less than the frame saved in the raw data
 SAVEOUTPUT_ON = 1;
