@@ -216,7 +216,7 @@ while ~feof(fidList)
                 %title(['FrameID: ' num2str(cnt)]);
                 xlabel('Range(m)');
                 ylabel('Receive Power (dB)')
-                title(['Range Profile(zero Doppler - thick green line): frameID ' num2str(frameIdx)]);
+                title(['Range Profile(zero Doppler - thick green line): frameID ' num2str(frameCountGlobal)]);
                 hold off;
                 subplot(2,2,2);
                 %subplot_tight(2,2,2,0.1)

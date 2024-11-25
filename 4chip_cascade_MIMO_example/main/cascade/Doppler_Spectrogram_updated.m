@@ -141,3 +141,10 @@ title(sprintf('Doppler Spectrogram of %s', testNewName), 'FontSize', 14);
 
 % Optional: Add grid lines for better readability
 grid on;
+
+% Save image
+outputImageFilePath = ['.\main\cascade\output\images\' , testName, '.pdf'];
+f = gca;
+exportgraphics(gca, outputImageFilePath, "ContentType", 'vector');
+
+%saveas(gcf, ['Doppler_Spectrogram_Drone_', testName, '.png']);
