@@ -103,7 +103,11 @@ while ~feof(fidList)
     frameCountGlobal = 0;
     
     % switching off antenna calibration
-    calibrationObj.adcCalibrationOn = 0;
+    calibrationObj.adcCalibrationOn = 1;
+
+    % enable doppler window
+    DopplerFFTObj.dopplerWindowEnable = 0;
+    DopplerFFTObj.clutterRemove = 0;
 
     % Get Unique File Idxs in the "dataFolder_test"
     [fileIdx_unique] = getUniqueFileIdx(dataFolder_test);
@@ -150,7 +154,7 @@ while ~feof(fidList)
             DopplerFFTOut = [];
 
             % range and Doppler FFT for each frame, for each Tx antenna
-            for i_tx = 1: size(adcData,4)
+            for i_tx = 1: size(adcData, 4)
                 % range FFT
                 rangeFFTOut(:,:,:,i_tx) = datapath(rangeFFTObj, adcData(:,:,:,i_tx));
 
@@ -255,6 +259,7 @@ while ~feof(fidList)
                     angles_all_all{cnt} = angles_all_points;
                     xyz_all{cnt}  = xyz;
                     maxRangeShow = detectionObj.rangeBinSize * rangeFFTObj.rangeFFTSize;
+                    maxVelocityShow = detectionObj.velocityBinSize * DopplerFFTObj.dopplerFFTSize;
                     %tic
                     if PLOT_ON
                         moveID = find(abs(xyz(:,4))>=0);
