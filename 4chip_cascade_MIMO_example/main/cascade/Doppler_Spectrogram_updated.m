@@ -6,7 +6,8 @@ close all
 % clc;
 
 % Initialize switch
-NORMALIZE_SPECTOGRAM = 1;
+NORMALIZE_SPECTOGRAM = 0;
+INCLUDE_RANGE_BINS = 1;
 
 % Specify the path to the saved .mat file
 pro_path = getenv('CASCADE_SIGNAL_PROCESSING_CHAIN_MIMO');
@@ -42,6 +43,9 @@ else
     error('dopplerBinSize is not available or is zero in the loaded data.');
 end
 
+% take the even data. only for this
+%sig_integrate_all = sig_integrate_all(1:2:end);
+
 % Determine the number of frames and Doppler bins
 numFrames = length(sig_integrate_all);
 if numFrames == 0
@@ -54,13 +58,28 @@ end
 % Initialize a matrix to hold Doppler spectra for all frames
 doppler_spectrogram = zeros(numFrames, numDopplerBins);
 
+% Define the range bins of interest (e.g., where the drone is located)
+% Adjust 'rangeStart' and 'rangeEnd' based on where the drone appears in range bins
+rangeStart = 1; % Example value (in range bin indices)
+rangeEnd = 1;  % Example value (in range bin indices)
+
 % Aggregate Doppler spectrum for each frame
 for frame = 1:numFrames
     currentSigIntegrate = sig_integrate_all{frame}; % [RangeBins, DopplerBins]
 
-    % Sum across range bins to get Doppler spectrum for the current frame
-    doppler_spectrogram(frame, :) = sum(currentSigIntegrate, 1); % [1, DopplerBins]
+    if INCLUDE_RANGE_BINS == 1
+        % Sum across the range bins where the drone is expected
+        % This focuses on the target area and improves SNR
+        rangeBinsOfInterest = rangeStart:rangeEnd;
+        % doppler_spectrogram(frame, :) = sum(currentSigIntegrate(rangeBinsOfInterest, :), 1); % [1, DopplerBins]
+        doppler_spectrogram(frame, :) = currentSigIntegrate(rangeBinsOfInterest, :); % [1, DopplerBins]
+    else
+        % Sum across range bins to get Doppler spectrum for the current frame
+        doppler_spectrogram(frame, :) = sum(currentSigIntegrate, 1); % [1, DopplerBins]
+    end
 end
+
+% doppler_spectrogram = 10 * log10(doppler_spectrogram + 1);
 
 % Normalize the Doppler Spectrogram for better visualization (optional)
 % This step enhances contrast by scaling data between 0 and 1
@@ -70,7 +89,7 @@ if NORMALIZE_SPECTOGRAM == 1
 end
 
 % Create the Doppler Spectrogram plot
-figure('Name', 'Doppler Spectrogram (Logarithmic Scale)', 'Position', [400 400 900 600]);
+figure('Name', 'Doppler Spectrogram (Logarithmic Scale)', 'Position', [400 400 900 600], 'NumberTitle', 'off');
 
 
 % Use imagesc to create a heatmap
@@ -80,7 +99,8 @@ colorbar; % Display color scale
 axis xy; % Ensure the y-axis starts from the bottom
 
 % Label the axes
-xlabel('Doppler Velocity (m/s)');
+% xlabel('Doppler Velocity (m/s)');
+xlabel('Doppler bins');
 ylabel('Frame ID');
 
 % Calculate Doppler Velocity Range for X-axis Labels
@@ -88,7 +108,8 @@ dopplerIndices = 1:numDopplerBins;
 zeroDopplerBin = ceil(numDopplerBins / 2) + 1; % For FFT size 64, zero Doppler is bin 33
 
 % Doppler Velocity Calculation
-dopplerVelocities = (dopplerIndices - zeroDopplerBin) * dopplerBinSize;
+% dopplerVelocities = (dopplerIndices - zeroDopplerBin) * dopplerBinSize;
+dopplerVelocities = (dopplerIndices - zeroDopplerBin);
 
 % Set X-axis Ticks and Labels
 numTicks = 8; % Number of ticks on the x-axis
@@ -115,8 +136,8 @@ set(gca, 'XTick', tickPositions, 'XTickLabel', tickLabels);
 
 % Improve visualization aesthetics
 set(gca, 'FontSize', 12);
-testName = regexprep(testName, '_', '\\_');
-title(sprintf('Doppler Spectrogram of %s', testName), 'FontSize', 14);
+testNewName = regexprep(testName, '_', '\\_');
+title(sprintf('Doppler Spectrogram of %s', testNewName), 'FontSize', 14);
 
 % Optional: Add grid lines for better readability
 grid on;

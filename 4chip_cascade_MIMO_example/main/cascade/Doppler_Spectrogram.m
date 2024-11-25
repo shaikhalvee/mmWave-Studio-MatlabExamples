@@ -9,7 +9,7 @@ close all;
 NORMALIZE_SPECTOGRAM = 1;
 
 % Specify the path to the saved .mat file
-testName = 'drone_steady_1';
+testName = 'loon_slp_79_adc_256_lp_128_smpl_8000_rmp_40';
 outputFile = ['.\main\cascade\output\newOutput_', testName, '.mat'];
 
 % Check if the file exists
