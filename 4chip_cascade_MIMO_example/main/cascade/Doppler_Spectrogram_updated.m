@@ -8,6 +8,7 @@ close all
 % Initialize switch
 %NORMALIZE_SPECTOGRAM = 0;
 INCLUDE_RANGE_BINS = 1;
+RANGE_DOPPLER_PRINT = 0;
 
 % Specify the path to the saved .mat file
 pro_path = getenv('CASCADE_SIGNAL_PROCESSING_CHAIN_MIMO');
@@ -98,8 +99,8 @@ axis xy; % Ensure the y-axis starts from the bottom
 
 % Label the axes
 % xlabel('Doppler Velocity (m/s)');
-xlabel('Doppler bins');
-ylabel('Frame ID');
+xlabel('Doppler bins', 'FontWeight', 'bold');
+ylabel('Frame ID', 'FontWeight', 'bold');
 
 % Calculate Doppler Velocity Range for X-axis Labels
 dopplerIndices = 1:numDopplerBins;
@@ -133,9 +134,10 @@ set(gca, 'XTick', tickPositions, 'XTickLabel', tickLabels);
 % ylabel('Time (s)');
 
 % Improve visualization aesthetics
-set(gca, 'FontSize', 12);
-testNewName = regexprep(testName, '_', '\\_');
-title(sprintf('Doppler Spectrogram of %s', testNewName), 'FontSize', 14);
+set(gca, 'FontSize', 14, 'LineWidth', 1.5);
+%testNewName = regexprep(testName, '_', '\\_');
+%title(sprintf('Doppler Spectrogram of %s', testNewName), 'FontSize', 14);
+title('Doppler Spectrogram', 'FontSize', 14, 'FontWeight','bold')
 
 % Optional: Add grid lines for better readability
 grid on;
@@ -146,3 +148,35 @@ f = gca;
 exportgraphics(gca, outputImageFilePath, "ContentType", 'vector');
 
 %saveas(gcf, ['Doppler_Spectrogram_Drone_', testName, '.png']);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if RANGE_DOPPLER_PRINT == 1
+    % Plot the Range Doppler image for the 100th frame
+    figure('Name', 'Range Doppler Image - Frame 100', 'NumberTitle', 'off');
+
+    % Use imagesc to plot the data for the 100th frame
+    imagesc(sig_integrate_all{100});
+
+    % Show the colorbar
+    c = colorbar;
+
+    % Set colormap
+    colormap('parula'); % Optional, choose your preferred colormap
+    c.Label.String = 'Relative Power(dB)';
+
+    % Label the axes
+    xlabel('Doppler Bins', 'FontSize', 14, 'FontWeight', 'bold'); % Larger font size for x-axis
+    ylabel('Range Bins', 'FontSize', 14, 'FontWeight', 'bold'); % Larger font size for y-axis
+
+    % Set ticks to be more visible
+    set(gca, 'FontSize', 14, 'LineWidth', 1.5, 'XTick', tickPositions, 'XTickLabel', tickLabels); % Increase tick font size and line width
+
+    % Saving single range doppler
+    title('Range Doppler Image - Frame 100', 'FontSize', 16, 'FontWeight', 'bold'); % Title with larger font size
+    title('Range Doppler', 'FontSize', 14, 'FontWeight', 'bold');
+    outputImageFilePath = ['.\main\cascade\output\images\' , 'Range Doppler of frame 100', '.pdf'];
+    f = gca;
+    exportgraphics(gca, outputImageFilePath, "ContentType", 'vector');
+end
+
