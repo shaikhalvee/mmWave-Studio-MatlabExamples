@@ -108,19 +108,19 @@ zeroDopplerBin = ceil(numDopplerBins / 2) + 1; % For FFT size 64, zero Doppler i
 
 % Doppler Velocity Calculation
 % dopplerVelocities = (dopplerIndices - zeroDopplerBin) * dopplerBinSize;
-dopplerVelocities = (dopplerIndices - zeroDopplerBin);
+dopplerBinNumber = (dopplerIndices - zeroDopplerBin);
 
 % Set X-axis Ticks and Labels
-numTicks = 8; % Number of ticks on the x-axis
-tickInterval = ceil(numDopplerBins / numTicks);
+xNumTicks = 8; % Number of ticks on the x-axis
+tickInterval = ceil(numDopplerBins / xNumTicks);
 
 % Generate Tick Positions
 %tickPositions = 1:tickInterval:numDopplerBins;
 tickPositions = [1:tickInterval:numDopplerBins, numDopplerBins]; % Ensure the last tick is included
 
 % Generate Corresponding Doppler Velocity Labels
-%tickLabels = dopplerVelocities(tickPositions);
-tickLabels = round(dopplerVelocities(tickPositions), 2); % Round to 2 decimal places for readability
+%tickLabels = dopplerVelocities(tickPositions), 2); % Round to 2 decimal places for readability
+tickLabels = round(dopplerBinNumber(tickPositions), 2);
 
 % Apply X-axis Tick Labels
 set(gca, 'XTick', tickPositions, 'XTickLabel', tickLabels);
@@ -133,6 +133,16 @@ set(gca, 'XTick', tickPositions, 'XTickLabel', tickLabels);
 % set(gca, 'YTick', 1:10:numFrames, 'YTickLabel', round(frameTimes(1:10:end),2));
 % ylabel('Time (s)');
 
+% Set y-axis labels to represent frame IDs (650 to 1221)
+%frameIDs = 650:1221;
+%numYTicks = 10; % Number of ticks on the y-axis
+%yTickInterval = ceil(length(frameIDs) / numYTicks);
+%yTickPositions = 1:yTickInterval:length(frameIDs);
+%yTickLabels = frameIDs(yTickPositions);
+
+% Apply Y-axis Tick Labels
+%set(gca, 'YTick', yTickPositions, 'YTickLabel', yTickLabels);
+
 % Improve visualization aesthetics
 set(gca, 'FontSize', 14, 'LineWidth', 1.5);
 %testNewName = regexprep(testName, '_', '\\_');
@@ -141,6 +151,10 @@ title('Doppler Spectrogram', 'FontSize', 14, 'FontWeight','bold')
 
 % Optional: Add grid lines for better readability
 grid on;
+
+% Save Doppler Spectrogram
+outputVariablePath = ['.\main\cascade\output\doppler_spectrogram_', testName, '.mat'];
+save(outputVariablePath, 'doppler_spectrogram')
 
 % Save image
 outputImageFilePath = ['.\main\cascade\output\images\' , testName, '.pdf'];
