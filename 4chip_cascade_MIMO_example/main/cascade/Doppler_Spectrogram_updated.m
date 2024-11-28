@@ -9,6 +9,7 @@ close all
 %NORMALIZE_SPECTOGRAM = 0;
 INCLUDE_RANGE_BINS = 1;
 RANGE_DOPPLER_PRINT = 0;
+SHOW_DETECTION_RESULT = 0;
 
 % Specify the path to the saved .mat file
 pro_path = getenv('CASCADE_SIGNAL_PROCESSING_CHAIN_MIMO');
@@ -104,10 +105,11 @@ ylabel('Frame ID', 'FontWeight', 'bold');
 
 % Calculate Doppler Velocity Range for X-axis Labels
 dopplerIndices = 1:numDopplerBins;
-zeroDopplerBin = ceil(numDopplerBins / 2) + 1; % For FFT size 64, zero Doppler is bin 33
+% Adjust if fftshift was applied
+zeroDopplerBin = ceil(numDopplerBins / 2) + 1; % For FFT size 64, zero Doppler is bin 33 
 
 % Doppler Velocity Calculation
-% dopplerVelocities = (dopplerIndices - zeroDopplerBin) * dopplerBinSize;
+% dopplerVelocities = (dopplerIndices - zeroDopplerBin) * dopplerBinSize;  % Velocity values in m/s
 dopplerBinNumber = (dopplerIndices - zeroDopplerBin);
 
 % Set X-axis Ticks and Labels
@@ -125,7 +127,7 @@ tickLabels = round(dopplerBinNumber(tickPositions), 2);
 % Apply X-axis Tick Labels
 set(gca, 'XTick', tickPositions, 'XTickLabel', tickLabels);
 
-% Customize the y-axis if needed
+% Customize the y-axis
 % Example: Label frames with actual timestamps or frame rates
 % Assuming a frame rate 'frameRate' (frames per second)
 % frameRate = 30; % Example value
@@ -192,5 +194,28 @@ if RANGE_DOPPLER_PRINT == 1
     outputImageFilePath = ['.\main\cascade\output\images\' , 'Range Doppler of frame 100', '.pdf'];
     f = gca;
     exportgraphics(gca, outputImageFilePath, "ContentType", 'vector');
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if SHOW_DETECTION_RESULT == 1
+    if isfield(loadedData, 'detection_results_all')
+    hold on;
+    for frame = 1:numFrames
+        detection_results = loadedData.detection_results_all{frame};
+        if ~isempty(detection_results)
+            % Extract Doppler indices and convert to velocities
+            dopplerInds = arrayfun(@(x) x.dopplerInd, detection_results);
+            dopplerVels = (dopplerInds - zeroDopplerBin) * dopplerBinSize;
+            % Plot detections
+            plot(timeAxis(frame) * ones(size(dopplerVels)), dopplerVels, 'k.', 'MarkerSize', 10);
+        end
+    end
+    hold off;
+end
+
+% Optional: Save the figure
+% saveas(gcf, ['Doppler_Spectrogram_Drone_', testName, '.png']);
 end
 
