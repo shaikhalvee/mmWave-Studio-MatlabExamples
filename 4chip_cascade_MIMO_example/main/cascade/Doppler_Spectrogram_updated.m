@@ -6,7 +6,7 @@ close all
 % clc;
 
 % Initialize switch
-NORMALIZE_SPECTOGRAM = 0;
+%NORMALIZE_SPECTOGRAM = 0;
 INCLUDE_RANGE_BINS = 1;
 
 % Specify the path to the saved .mat file
@@ -43,8 +43,6 @@ else
     error('dopplerBinSize is not available or is zero in the loaded data.');
 end
 
-% take the even data. only for this
-%sig_integrate_all = sig_integrate_all(1:2:end);
 
 % Determine the number of frames and Doppler bins
 numFrames = length(sig_integrate_all);
@@ -83,10 +81,10 @@ end
 
 % Normalize the Doppler Spectrogram for better visualization (optional)
 % This step enhances contrast by scaling data between 0 and 1
-if NORMALIZE_SPECTOGRAM == 1
-    doppler_spectrogram = doppler_spectrogram - min(doppler_spectrogram(:));
-    doppler_spectrogram = doppler_spectrogram / max(doppler_spectrogram(:));
-end
+%if NORMALIZE_SPECTOGRAM == 1
+%    doppler_spectrogram = doppler_spectrogram - min(doppler_spectrogram(:));
+%    doppler_spectrogram = doppler_spectrogram / max(doppler_spectrogram(:));
+%end
 
 % Create the Doppler Spectrogram plot
 figure('Name', 'Doppler Spectrogram (Logarithmic Scale)', 'Position', [400 400 900 600], 'NumberTitle', 'off');
