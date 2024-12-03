@@ -31,14 +31,20 @@ end
 
 % Load the required data
 loadedData = load(outputFile, 'sig_integrate_all', 'rangeBinSize', 'dopplerBinSize', 'detection_results_all');
-doppler_spectrogram = load(dopplerSpectrogramFile, 'doppler_spectrogram');
+loadVariable = load(dopplerSpectrogramFile, 'doppler_spectrogram');
 
 % Validate data existence
 if ~isfield(loadedData, 'sig_integrate_all')
     error('The variable ''sig_integrate_all'' does not exist in the loaded file.');
 end
 
+if ~isfield(loadVariable, 'doppler_spectrogram')
+    error('the variable ''doppler_spectrogram'' does not exist.')
+end
+
+
 sig_integrate_all = loadedData.sig_integrate_all;
+doppler_spectrogram = loadVariable.doppler_spectrogram;
 
 % Retrieve Doppler Bin Size
 if isfield(loadedData, 'dopplerBinSize') && loadedData.dopplerBinSize ~= 0
@@ -55,6 +61,57 @@ end
 
 % Assuming all frames have the same dimensions
 [numRangeBins, numDopplerBins] = size(sig_integrate_all{1});
+
+% Wrapping interval range
+wrapping_interval = 2:64;
+
+% Preallocate results
+wrapping_results = zeros(size(doppler_spectrogram, 1), 1); % Stores P_i for each spectrum
+optimal_wrapping = zeros(size(doppler_spectrogram, 1), 1); % Stores the optimal wrapping interval for each spectrum
+
+% Loop through each Doppler spectrum
+for frame_idx = 1:size(doppler_spectrogram, 1)
+    doppler_spectrum = doppler_spectrogram(frame_idx, :);
+    max_wrapped_value = -Inf; % Initialize max folding value for this spectrum
+    best_wrap_val = 0; % Initialize best wrapping value
+
+    % Loop through wrapping intervals
+    for wrap_val = wrapping_interval
+        % Calculate M = floor(length of Doppler spectrum / wrap_val)
+        M = floor(length(doppler_spectrum) / wrap_val);
+        
+        % Check if wrapping is feasible
+        if M < 1
+            continue;
+        end
+        
+        % Reshape Doppler spectrum into [M, wrap_val] matrix
+        wrapped_matrix = reshape(doppler_spectrum(1:M*wrap_val), [M, wrap_val]);
+        
+        % Compute column-wise average
+        column_avg = mean(wrapped_matrix, 1);
+        
+        % Compute folding value: maximum of column averages
+        wrapped_value = max(column_avg);
+        
+        % Update maximum folding value and wrapping interval
+        if wrapped_value > max_wrapped_value
+            max_wrapped_value = wrapped_value;
+            best_wrap_val = wrap_val;
+        end
+    end
+    
+    % Store results
+    wrapping_results(frame_idx) = max_wrapped_value; % P_i for this spectrum
+    optimal_wrapping(frame_idx) = best_wrap_val; % Optimal wrapping interval
+end
+
+% Display results
+disp('Folding results (P_i) for each spectrum:');
+disp(wrapping_results);
+
+disp('Optimal wrapping intervals for each spectrum:');
+disp(optimal_wrapping);
 
 
 

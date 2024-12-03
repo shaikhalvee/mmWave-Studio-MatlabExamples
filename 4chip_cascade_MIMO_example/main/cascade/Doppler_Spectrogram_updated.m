@@ -213,9 +213,7 @@ if SHOW_DETECTION_RESULT == 1
         end
     end
     hold off;
+    end
 end
-
 % Optional: Save the figure
 % saveas(gcf, ['Doppler_Spectrogram_Drone_', testName, '.png']);
-end
-
