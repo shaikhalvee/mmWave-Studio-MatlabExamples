@@ -212,7 +212,7 @@ while ~feof(fidList)
                 % access data with angleEst{frame}(objectIdx).fieldName
                 angleEst = datapath(DOAObj, detection_results);
                 
-                if length(angleEst) > 0
+                if ~isempty(angleEst)
                     for iobj = 1:length(angleEst)
                         angles_all_points (iobj,1:2)=angleEst(iobj).angles(1:2);
                         angles_all_points (iobj,3)=angleEst(iobj).estSNR;
