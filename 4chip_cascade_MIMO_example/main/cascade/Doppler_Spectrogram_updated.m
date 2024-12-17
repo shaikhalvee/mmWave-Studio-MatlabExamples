@@ -8,7 +8,7 @@ close all
 % Initialize switch
 %NORMALIZE_SPECTOGRAM = 0;
 INCLUDE_RANGE_BINS = 1;
-RANGE_DOPPLER_PRINT = 0;
+RANGE_DOPPLER_PRINT = 1;
 SHOW_DETECTION_RESULT = 0;
 
 % Specify the path to the saved .mat file
@@ -36,6 +36,7 @@ if ~isfield(loadedData, 'sig_integrate_all')
     error('The variable ''sig_integrate_all'' does not exist in the loaded file.');
 end
 
+% sig_integrate_all contains all the range Doppler FFT for each frame.
 sig_integrate_all = loadedData.sig_integrate_all;
 
 % Retrieve Doppler Bin Size
@@ -61,7 +62,7 @@ doppler_spectrogram = zeros(numFrames, numDopplerBins);
 % Define the range bins of interest (e.g., where the drone is located)
 % Adjust 'rangeStart' and 'rangeEnd' based on where the drone appears in range bins
 rangeStart = 1; % Example value (in range bin indices)
-rangeEnd = 1;  % Example value (in range bin indices)
+rangeEnd = 3;  % Example value (in range bin indices)
 
 % Aggregate Doppler spectrum for each frame
 for frame = 1:numFrames
@@ -71,15 +72,15 @@ for frame = 1:numFrames
         % Sum across the range bins where the drone is expected
         % This focuses on the target area and improves SNR
         rangeBinsOfInterest = rangeStart:rangeEnd;
-        % doppler_spectrogram(frame, :) = sum(currentSigIntegrate(rangeBinsOfInterest, :), 1); % [1, DopplerBins]
-        doppler_spectrogram(frame, :) = currentSigIntegrate(rangeBinsOfInterest, :); % [1, DopplerBins]
+        doppler_spectrogram(frame, :) = sum(currentSigIntegrate(rangeBinsOfInterest, :), 1); % [1, DopplerBins]
+        % doppler_spectrogram(frame, :) = currentSigIntegrate(rangeBinsOfInterest, :); % [1, DopplerBins]
     else
         % Sum across range bins to get Doppler spectrum for the current frame
         doppler_spectrogram(frame, :) = sum(currentSigIntegrate, 1); % [1, DopplerBins]
     end
 end
 
-% doppler_spectrogram = 10 * log10(doppler_spectrogram + 1);
+doppler_spectrogram = 10 * log10(doppler_spectrogram + 1);
 
 % Normalize the Doppler Spectrogram for better visualization (optional)
 % This step enhances contrast by scaling data between 0 and 1
@@ -109,7 +110,9 @@ dopplerIndices = 1:numDopplerBins;
 zeroDopplerBin = ceil(numDopplerBins / 2) + 1; % For FFT size 64, zero Doppler is bin 33 
 
 % Doppler Velocity Calculation
-% dopplerVelocities = (dopplerIndices - zeroDopplerBin) * dopplerBinSize;  % Velocity values in m/s
+dopplerVelocities = (dopplerIndices - zeroDopplerBin) * dopplerBinSize;  % Velocity values in m/s
+lambda = 3.888536e-03;
+frequencies = dopplerVelocities * 2 / lambda;
 dopplerBinNumber = (dopplerIndices - zeroDopplerBin);
 
 % Set X-axis Ticks and Labels
@@ -121,7 +124,8 @@ tickInterval = ceil(numDopplerBins / xNumTicks);
 tickPositions = [1:tickInterval:numDopplerBins, numDopplerBins]; % Ensure the last tick is included
 
 % Generate Corresponding Doppler Velocity Labels
-%tickLabels = dopplerVelocities(tickPositions), 2); % Round to 2 decimal places for readability
+% tickLabels = round(dopplerVelocities(tickPositions), 2); % Round to 2 decimal places for readability
+% tickLabels = round(frequencies(tickPositions), 2); % Round to 2 decimal places for readability
 tickLabels = round(dopplerBinNumber(tickPositions), 2);
 
 % Apply X-axis Tick Labels
@@ -168,30 +172,36 @@ exportgraphics(gca, outputImageFilePath, "ContentType", 'vector');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if RANGE_DOPPLER_PRINT == 1
+    frameNumber = 130;
+    rangeBinNumber = 1;
+
     % Plot the Range Doppler image for the 100th frame
-    figure('Name', 'Range Doppler Image - Frame 100', 'NumberTitle', 'off');
+    figure('Name', ['Range Doppler Image - Frame ', num2str(frameNumber)], 'NumberTitle', 'off');
 
     % Use imagesc to plot the data for the 100th frame
-    imagesc(sig_integrate_all{100});
+    % imagesc(sig_integrate_all{100});
+    plot(sig_integrate_all{frameNumber}(rangeBinNumber,:));
 
     % Show the colorbar
-    c = colorbar;
+    % c = colorbar;
 
     % Set colormap
-    colormap('parula'); % Optional, choose your preferred colormap
-    c.Label.String = 'Relative Power(dB)';
+    % colormap('parula'); % Optional, choose your preferred colormap
+    % c.Label.String = 'Relative Power(dB)';
 
     % Label the axes
     xlabel('Doppler Bins', 'FontSize', 14, 'FontWeight', 'bold'); % Larger font size for x-axis
-    ylabel('Range Bins', 'FontSize', 14, 'FontWeight', 'bold'); % Larger font size for y-axis
+%    ylabel('Range Bins', 'FontSize', 14, 'FontWeight', 'bold'); % Larger font size for y-axis
+    ylabel('Amplitude', 'FontSize', 14, 'FontWeight', 'bold'); % Larger font size for y-axis
 
     % Set ticks to be more visible
-    set(gca, 'FontSize', 14, 'LineWidth', 1.5, 'XTick', tickPositions, 'XTickLabel', tickLabels); % Increase tick font size and line width
+    set(gca, 'FontSize', 14, 'LineWidth', 1.5, 'XTick', tickPositions, 'XTickLabel', tickLabels, 'YDir', 'normal'); % Increase tick font size and line width
 
     % Saving single range doppler
-    title('Range Doppler Image - Frame 100', 'FontSize', 16, 'FontWeight', 'bold'); % Title with larger font size
-    title('Range Doppler', 'FontSize', 14, 'FontWeight', 'bold');
-    outputImageFilePath = ['.\main\cascade\output\images\' , 'Range Doppler of frame 100', '.pdf'];
+%    title('Range Doppler Image - Frame 100', 'FontSize', 16, 'FontWeight', 'bold'); % Title with larger font size
+%    outputImageFilePath = ['.\main\cascade\output\images\' , 'Range Doppler of frame 100', '.pdf'];
+    title(['Range Doppler Image - Frame ', num2str(frameNumber), ' and range bin', num2str(rangeBinNumber)], 'FontSize', 16, 'FontWeight', 'bold'); % Title with larger font size
+    outputImageFilePath = ['.\main\cascade\output\images\' , ['Range Doppler Image - Frame ', num2str(frameNumber), 'and range bin', num2str(rangeBinNumber)], '.pdf'];
     f = gca;
     exportgraphics(gca, outputImageFilePath, "ContentType", 'vector');
 end
@@ -215,5 +225,7 @@ if SHOW_DETECTION_RESULT == 1
     hold off;
     end
 end
+
+
 % Optional: Save the figure
-% saveas(gcf, ['Doppler_Spectrogram_Drone_', testName, '.png']);
+saveas(gcf, ['Doppler_Spectrogram_Drone_', testName, '.pdf']);

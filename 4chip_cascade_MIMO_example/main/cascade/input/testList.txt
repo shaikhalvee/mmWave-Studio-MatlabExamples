@@ -1,3 +1,3 @@
-E:\Documents\Jetbrains\Pycharm\mmWaveTest\data\hov_slp_18_adc_64_lp_128_smpl_8000_rmp_15_4\
+E:\Documents\Jetbrains\Pycharm\mmWaveTest\data\drn_slp_9_adc_128_lp_128_smpl_16000_rmp_15_frm_30\
 E:\Documents\MATLAB\MatlabExamples\4chip_cascade_MIMO_example\main\cascade\input\calibrateResults_high.mat
 E:\Documents\MATLAB\MatlabExamples\4chip_cascade_MIMO_example\main\cascade\paramGen\module_param.m

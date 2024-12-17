@@ -106,8 +106,9 @@ while ~feof(fidList)
     calibrationObj.adcCalibrationOn = 1;
 
     % enable doppler window
-    DopplerFFTObj.dopplerWindowEnable = 0;
-    DopplerFFTObj.clutterRemove = 0;
+    DopplerFFTObj.dopplerWindowEnable = 1;
+    DopplerFFTObj.clutterRemove = 1;
+    DopplerFFTObj.FFTOutScaleOn = 1;
 
     % Get Unique File Idxs in the "dataFolder_test"
     [fileIdx_unique] = getUniqueFileIdx(dataFolder_test);
@@ -138,12 +139,12 @@ while ~feof(fidList)
             % RX Channel re-ordering
             adcData = adcData(:,:,calibrationObj.RxForMIMOProcess,:); % reorder according to (Rx) [13 14 15 16 1 2 3 4 9 10 11 12 5 6 7 8 ] order
 
-            % sizeVal = size(adcData); % [256,64,16,12]
+            sizeADC = size(adcData); % [256,64,16,12]
             % sizeVal1 = size(adcData, 4); % 12
             
             % only take TX and RXs required for MIMO data analysis
             % adcData = adcData
-            
+          
             if mod(frameIdx, 10)==1
                 fprintf('Processing %3d frame...\n', frameIdx);
             end
@@ -156,14 +157,17 @@ while ~feof(fidList)
             % range and Doppler FFT for each frame, for each Tx antenna
             for i_tx = 1: size(adcData, 4)
                 % range FFT
+                % rangeFFT along the range axis (N_ADC samples)
                 rangeFFTOut(:,:,:,i_tx) = datapath(rangeFFTObj, adcData(:,:,:,i_tx));
 
                 % Doppler FFT
+                
                 DopplerFFTOut(:,:,:,i_tx) = datapath(DopplerFFTObj, rangeFFTOut(:,:,:,i_tx));
                 
             end
             
-            % sizeVal = size(DopplerFFTOut); % [256, 64, 16, 12]
+            sizeRange = size(rangeFFTOut);
+            sizeDoppler = size(DopplerFFTOut); % [256, 64, 16, 12]
   
             % CFAR done along only TX and RX used in MIMO array
             DopplerFFTOut = reshape(DopplerFFTOut,size(DopplerFFTOut,1), size(DopplerFFTOut,2), size(DopplerFFTOut,3)*size(DopplerFFTOut,4));
@@ -214,13 +218,17 @@ while ~feof(fidList)
                 end
                 
                 %title(['FrameID: ' num2str(cnt)]);
+                rangeStart = 1; % Example value (in range bin indices)
+                rangeEnd = 64;  % Example value (in range bin indices)
+                rangeBinsOfInterest = rangeStart:rangeEnd;
                 xlabel('Range(m)');
                 ylabel('Receive Power (dB)')
                 title(['Range Profile(zero Doppler - thick green line): frameID ' num2str(frameCountGlobal)]);
                 hold off;
                 subplot(2,2,2);
                 %subplot_tight(2,2,2,0.1)
-                imagesc((sig_integrate))
+                % imagesc((sig_integrate))
+                imagesc((sig_integrate(rangeBinsOfInterest, :)))
                 c = colorbar;
                 c.Label.String = 'Relative Power(dB)';
                 title(' Range/Velocity Plot');
@@ -236,7 +244,7 @@ while ~feof(fidList)
                 % access data with angleEst{frame}(objectIdx).fieldName
                 angleEst = datapath(DOAObj, detection_results);
                 
-                if length(angleEst) > 0
+                if ~isempty(angleEst)
                     for iobj = 1:length(angleEst)
                         angles_all_points (iobj,1:2)=angleEst(iobj).angles(1:2);
                         angles_all_points (iobj,3)=angleEst(iobj).estSNR;
@@ -331,7 +339,11 @@ while ~feof(fidList)
     ind = strfind(dataFolder_test, '\');
     testName = dataFolder_test(ind(end-1)+1:(ind(end)-1));
     if SAVEOUTPUT_ON == 1
-        save(['.\main\cascade\output\newOutput_',testName,'.mat'],'angles_all_all', 'detection_results_all','xyz_all', 'sig_integrate_all', 'rangeBinSize', 'dopplerBinSize');
+        if isempty(detection_results_all)
+            save(['.\main\cascade\output\newOutput_',testName,'.mat'], 'sig_integrate_all', 'rangeBinSize', 'dopplerBinSize');
+        else
+            save(['.\main\cascade\output\newOutput_',testName,'.mat'],'angles_all_all', 'detection_results_all','xyz_all', 'sig_integrate_all', 'rangeBinSize', 'dopplerBinSize');
+        end
     end
     testID = testID + 1; 
 end
