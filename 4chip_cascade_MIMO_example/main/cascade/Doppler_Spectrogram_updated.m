@@ -200,7 +200,7 @@ if RANGE_DOPPLER_PRINT == 1
     % Saving single range doppler
 %    title('Range Doppler Image - Frame 100', 'FontSize', 16, 'FontWeight', 'bold'); % Title with larger font size
 %    outputImageFilePath = ['.\main\cascade\output\images\' , 'Range Doppler of frame 100', '.pdf'];
-    title(['Range Doppler Image - Frame ', num2str(frameNumber), ' and range bin', num2str(rangeBinNumber)], 'FontSize', 16, 'FontWeight', 'bold'); % Title with larger font size
+    title(['Range Doppler Image - Frame ', num2str(frameNumber), ' and range bin ', num2str(rangeBinNumber)], 'FontSize', 16, 'FontWeight', 'bold'); % Title with larger font size
     outputImageFilePath = ['.\main\cascade\output\images\' , ['Range Doppler Image - Frame ', num2str(frameNumber), 'and range bin', num2str(rangeBinNumber)], '.pdf'];
     f = gca;
     exportgraphics(gca, outputImageFilePath, "ContentType", 'vector');

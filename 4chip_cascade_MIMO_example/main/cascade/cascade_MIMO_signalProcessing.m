@@ -103,12 +103,12 @@ while ~feof(fidList)
     frameCountGlobal = 0;
     
     % switching off antenna calibration
-    calibrationObj.adcCalibrationOn = 1;
+    % calibrationObj.adcCalibrationOn = 1;
 
     % enable doppler window
-    DopplerFFTObj.dopplerWindowEnable = 1;
-    DopplerFFTObj.clutterRemove = 1;
-    DopplerFFTObj.FFTOutScaleOn = 1;
+    %DopplerFFTObj.dopplerWindowEnable = 1;
+    %DopplerFFTObj.clutterRemove = 0;
+    %DopplerFFTObj.FFTOutScaleOn = 0;
 
     % Get Unique File Idxs in the "dataFolder_test"
     [fileIdx_unique] = getUniqueFileIdx(dataFolder_test);
@@ -218,8 +218,8 @@ while ~feof(fidList)
                 end
                 
                 %title(['FrameID: ' num2str(cnt)]);
-                rangeStart = 1; % Example value (in range bin indices)
-                rangeEnd = 64;  % Example value (in range bin indices)
+                rangeStart = 1; % Start from 1st range bin
+                rangeEnd = 64;  % Only considering upto 64
                 rangeBinsOfInterest = rangeStart:rangeEnd;
                 xlabel('Range(m)');
                 ylabel('Receive Power (dB)')
